@@ -27,10 +27,10 @@ export const dataSourceOptions: DataSourceOptions = {
   logging: process.env.NODE_ENV === 'development',
   
   // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
-  // Optimized for moderate load with minimal overhead
+  // Optimized for spike loads up to 100 concurrent users
   extra: {
-    max: 15,                      // Balanced pool size
-    min: 3,                       // Minimum idle connections
+    max: 30,                      // Handle spike load (was 15)
+    min: 5,                       // Keep warm connections (was 3)
     idleTimeoutMillis: 30000,     // Close idle connections after 30s
     connectionTimeoutMillis: 5000, // Timeout waiting for connection (5s)
     
@@ -40,7 +40,7 @@ export const dataSourceOptions: DataSourceOptions = {
   },
   
   // Alternative way to set pool size
-  poolSize: 15,  // Reduced from 20 to minimize overhead
+  poolSize: 30,  // Increased for spike load handling
 };
 
 const dataSource = new DataSource(dataSourceOptions);

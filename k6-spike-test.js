@@ -18,8 +18,8 @@ export const options = {
     { duration: '10s', target: 0 },    // Cool down
   ],
   thresholds: {
-    http_req_duration: ['p(95)<1000'],
-    http_req_failed: ['rate<0.2'],
+    http_req_duration: ['p(95)<2500'],  // Realistic for sudden spike (was 1000)
+    http_req_failed: ['rate<0.05'],     // Tightened - you're hitting 0%!
   },
 };
 

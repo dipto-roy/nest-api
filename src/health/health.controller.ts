@@ -5,8 +5,11 @@
  * including connection pool statistics
  */
 import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { DataSource } from 'typeorm';
 
+// Skip rate limiting for health checks (used by monitoring tools)
+@SkipThrottle()
 @Controller('health')
 export class HealthController {
   constructor(private dataSource: DataSource) {}
