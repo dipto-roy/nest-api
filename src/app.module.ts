@@ -6,7 +6,8 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_PIPE, APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
@@ -20,6 +21,17 @@ import { HealthModule } from './health/health.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    
+    // 🛡️ Rate Limiting - Prevents abuse during traffic spikes
+    // Higher limits in development for load testing
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => [{
+        ttl: 60000,
+        limit: configService.get('NODE_ENV') === 'production' ? 100 : 10000,
+      }],
+      inject: [ConfigService],
     }),
     
     // TypeORM database connection
@@ -38,14 +50,14 @@ import { HealthModule } from './health/health.module';
         
         // ⚡ PERFORMANCE: Connection pool configuration
         extra: {
-          max: 15,
-          min: 3,
+          max: 30,
+          min: 5,
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 5000,
           statement_timeout: 10000,
           query_timeout: 10000,
         },
-        poolSize: 15,
+        poolSize: 30,
       }),
       inject: [ConfigService],
     }),
@@ -62,6 +74,11 @@ import { HealthModule } from './health/health.module';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
+    },
+    // 🛡️ Apply rate limiting globally to all routes
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

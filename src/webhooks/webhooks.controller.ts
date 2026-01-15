@@ -14,12 +14,15 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Request } from 'express';
 import Stripe from 'stripe';
 import { PaymentsService } from '../payments/payments.service';
 import { OrdersService } from '../orders/orders.service';
 import { OrderStatus } from '../orders/enums/order-status.enum';
 
+// Skip rate limiting for Stripe webhooks (they have their own retry mechanism)
+@SkipThrottle()
 @Controller('webhooks')
 export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
