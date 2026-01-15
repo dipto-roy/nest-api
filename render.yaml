@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: nest-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: nest-api-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: nest-api-db
+          property: port
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: nest-api-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: nest-api-db
+          property: password
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: nest-api-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PORT
+        value: 3000
+
+databases:
+  - name: nest-api-db
+    databaseName: nest_api_db
+    plan: free
