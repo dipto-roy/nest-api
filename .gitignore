@@ -70,6 +70,22 @@ web_modules/
 .env.*
 !.env.example
 
+# ========================================
+# DEPLOYMENT CRITICAL FILES (DO NOT IGNORE)
+# ========================================
+# These files MUST be committed for deployment:
+# - package.json, package-lock.json (dependencies)
+# - tsconfig.json, nest-cli.json (build config)
+# - render.yaml (deployment config)
+# - src/ (source code)
+# - .env.example (environment template)
+# - *.md (documentation)
+# - postman_collection.json (API testing)
+
+# ========================================
+# IGNORE BUILD & CACHE FILES
+# ========================================
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -82,6 +98,17 @@ out
 .nuxt
 dist
 .output
+
+# ========================================
+# TEMPORARY & TEST FILES (IGNORE)
+# ========================================
+# k6 test results
+k6-results*.txt
+k6-summary.json
+*.tar.gz
+
+# Stripe CLI downloads
+stripe_*.tar.gz
 
 # Gatsby files
 .cache/
