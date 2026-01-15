@@ -19,12 +19,8 @@ export class PaymentsService {
     private readonly ordersService: OrdersService,
   ) {
     // Initialize Stripe with secret key from environment
-    this.stripe = new Stripe(
-      this.configService.get<string>('STRIPE_SECRET_KEY'),
-      {
-        apiVersion: '2024-12-18.acacia',
-      },
-    );
+    const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+    this.stripe = new Stripe(stripeKey);
   }
 
   /**
