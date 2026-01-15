@@ -19,6 +19,11 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  // ⚡ PERFORMANCE: Environment-based bcrypt rounds
+  // Production: 10 rounds (~100-150ms, secure)
+  // Development: 8 rounds (~40ms, faster testing)
+  private readonly BCRYPT_ROUNDS = process.env.NODE_ENV === 'production' ? 10 : 8;
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -41,8 +46,8 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password with environment-specific rounds
+    const hashedPassword = await bcrypt.hash(password, this.BCRYPT_ROUNDS);
 
     // Create and save user
     const user = this.userRepository.create({
