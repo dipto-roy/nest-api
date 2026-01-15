@@ -10,6 +10,8 @@
 
 A production-ready backend REST API built with NestJS, PostgreSQL, TypeORM, JWT authentication, and Stripe payment integration for a technical assignment.
 
+> ⚡ **New to this project?** Start with **[QUICKSTART.md](QUICKSTART.md)** for detailed setup instructions!
+
 ---
 
 ## 🚀 Quick Start (5 Minutes)

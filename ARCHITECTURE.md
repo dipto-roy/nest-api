@@ -1,5 +1,9 @@
 # Architecture & Design Decisions
 
+> ⚡ **Setting up the project?** Check **[QUICKSTART.md](QUICKSTART.md)** for installation instructions.
+
+---
+
 ## System Architecture
 
 ### High-Level Overview
