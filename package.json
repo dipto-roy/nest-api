@@ -13,7 +13,9 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate",
     "migration:run": "npm run typeorm -- migration:run -d src/config/database.config.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/config/database.config.ts"
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/database.config.ts",
+    "populate-data": "ts-node scripts/populate-test-data.ts",
+    "clear-data": "bash scripts/clear-test-data.sh"
   },
   "repository": {
     "type": "git",

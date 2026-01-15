@@ -20,14 +20,16 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.orders, { eager: true })
+  // ⚡ Removed eager: true - load relations only when needed for better performance
+  @ManyToOne(() => User, (user) => user.orders)
   @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column()
   userId: string;
 
-  @ManyToOne(() => Product, (product) => product.orders, { eager: true })
+  // ⚡ Removed eager: true - load relations only when needed for better performance
+  @ManyToOne(() => Product, (product) => product.orders)
   @JoinColumn({ name: 'productId' })
   product: Product;
 

@@ -12,6 +12,7 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -34,6 +35,17 @@ import { WebhooksModule } from './webhooks/webhooks.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') === 'development', // false in production
         logging: configService.get('NODE_ENV') === 'development',
+        
+        // ⚡ PERFORMANCE: Connection pool configuration
+        extra: {
+          max: 15,
+          min: 3,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          statement_timeout: 10000,
+          query_timeout: 10000,
+        },
+        poolSize: 15,
       }),
       inject: [ConfigService],
     }),
@@ -44,6 +56,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     OrdersModule,
     PaymentsModule,
     WebhooksModule,
+    HealthModule,
   ],
   providers: [
     {
