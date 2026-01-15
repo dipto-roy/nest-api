@@ -1,5 +1,9 @@
 # Deployment Guide
 
+> ⚡ **First time?** Complete local setup first using **[QUICKSTART.md](QUICKSTART.md)** before deploying!
+
+---
+
 ## Deploy to Render
 
 ### Prerequisites

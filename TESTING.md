@@ -1,5 +1,7 @@
 # Testing Guide
 
+> ⚡ **Haven't set up the project yet?** Start with **[QUICKSTART.md](QUICKSTART.md)** first!
+
 This guide walks you through testing the complete API flow using Postman.
 
 ## Prerequisites
