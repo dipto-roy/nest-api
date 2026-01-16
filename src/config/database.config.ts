@@ -13,6 +13,8 @@ const configService = new ConfigService();
  * Best Practice: In production, use migrations instead of synchronize
  * synchronize: true is convenient for development but should be false in production
  * to prevent accidental schema changes
+ * 
+ * Railway/Production: SSL is enabled automatically for secure connections
  */
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -26,6 +28,11 @@ export const dataSourceOptions: DataSourceOptions = {
   synchronize: process.env.NODE_ENV === 'development', // Set to false in production
   logging: process.env.NODE_ENV === 'development',
   
+  // 🔒 SSL Configuration for Production (Railway, Render, etc.)
+  ssl: process.env.NODE_ENV === 'production' ? {
+    rejectUnauthorized: false, // Railway requires this
+  } : false,
+  
   // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
   // Optimized for spike loads up to 100 concurrent users
   extra: {
@@ -37,6 +44,13 @@ export const dataSourceOptions: DataSourceOptions = {
     // PostgreSQL specific optimizations
     statement_timeout: 10000,     // Kill queries taking longer than 10s
     query_timeout: 10000,         // Same as statement_timeout
+    
+    // SSL for extra config (Railway compatibility)
+    ...(process.env.NODE_ENV === 'production' && {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
   },
   
   // Alternative way to set pool size
