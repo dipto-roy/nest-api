@@ -2,7 +2,7 @@ services:
   - type: web
     name: nest-api
     env: node
-    region: oregon
+    region: singapore
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start:prod
