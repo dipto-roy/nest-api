@@ -1,0 +1,24 @@
+# Railway Configuration
+# https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm run start:prod"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Health check configuration
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+
+# Environment configuration will be managed in Railway Dashboard
+# Make sure to add these variables in Railway:
+# - NODE_ENV=production
+# - DATABASE_URL (automatically provided by Railway when you add Postgres)
+# - JWT_SECRET
+# - JWT_EXPIRES_IN
+# - STRIPE_SECRET_KEY
+# - STRIPE_WEBHOOK_SECRET
+# - PORT (optional, Railway provides this)
