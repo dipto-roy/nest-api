@@ -41,6 +41,9 @@ import { HealthModule } from './health/health.module';
         const databaseUrl = configService.get('DATABASE_URL');
         const isProduction = configService.get('NODE_ENV') === 'production';
         
+        // Railway internal networking doesn't use SSL
+        const isRailwayInternal = databaseUrl?.includes('railway.internal');
+        
         // Base configuration
         const baseConfig = {
           type: 'postgres' as const,
@@ -48,26 +51,19 @@ import { HealthModule } from './health/health.module';
           synchronize: configService.get('NODE_ENV') === 'development',
           logging: configService.get('NODE_ENV') === 'development',
           
-          // SSL for production
-          ssl: isProduction ? {
+          // SSL only for external production connections (not Railway internal)
+          ssl: isProduction && !isRailwayInternal ? {
             rejectUnauthorized: false,
           } : false,
           
           // Connection pool - reduced for Railway free tier
           extra: {
-            max: 10, // Reduced from 30 for Railway free tier
-            min: 2,  // Reduced from 5
+            max: 10,
+            min: 2,
             idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 10000, // Increased timeout
-            statement_timeout: 30000, // Increased to 30s
+            connectionTimeoutMillis: 10000,
+            statement_timeout: 30000,
             query_timeout: 30000,
-            
-            // SSL for extra config
-            ...(isProduction && {
-              ssl: {
-                rejectUnauthorized: false,
-              },
-            }),
           },
         };
         
