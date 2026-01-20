@@ -59,13 +59,14 @@ if (databaseUrl) {
     } : false,
     
     // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
+    // Reduced for Railway free tier
     extra: {
-      max: 30,
-      min: 5,
+      max: 10, // Reduced from 30 for Railway free tier
+      min: 2,  // Reduced from 5
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-      statement_timeout: 10000,
-      query_timeout: 10000,
+      connectionTimeoutMillis: 10000, // Increased from 5000
+      statement_timeout: 30000, // Increased from 10000
+      query_timeout: 30000,
       
       // SSL for extra config
       ...(process.env.NODE_ENV === 'production' && {
@@ -74,7 +75,6 @@ if (databaseUrl) {
         },
       }),
     },
-    poolSize: 30,
   };
 } else {
   // Local development: use individual variables
@@ -112,13 +112,14 @@ if (databaseUrl) {
     } : false,
     
     // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
+    // Reduced for Railway free tier
     extra: {
-      max: 30,
-      min: 5,
+      max: 10, // Reduced from 30 for Railway free tier
+      min: 2,  // Reduced from 5
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-      statement_timeout: 10000,
-      query_timeout: 10000,
+      connectionTimeoutMillis: 10000, // Increased from 5000
+      statement_timeout: 30000, // Increased from 10000
+      query_timeout: 30000,
       
       // SSL for extra config
       ...(process.env.NODE_ENV === 'production' && {
@@ -127,7 +128,6 @@ if (databaseUrl) {
         },
       }),
     },
-    poolSize: 30,
   };
 }
 

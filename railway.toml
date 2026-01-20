@@ -11,7 +11,7 @@ restartPolicyMaxRetries = 10
 
 # Health check configuration
 healthcheckPath = "/health"
-healthcheckTimeout = 100
+healthcheckTimeout = 300 # Increased to 5 minutes for initial database setup
 
 # Environment configuration will be managed in Railway Dashboard
 # Make sure to add these variables in Railway:
