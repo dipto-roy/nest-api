@@ -2,64 +2,101 @@
 
 ## 🚀 Deploying NestJS API to Railway
 
-### Prerequisites
-- GitHub repository connected to Railway
-- Railway account
+### ⚠️ CRITICAL: Do These Steps in Order!
 
-### Step 1: Create New Project in Railway
+### Step 1: Add PostgreSQL Database FIRST
+**This must be done BEFORE deploying your app!**
+
 1. Go to [Railway.app](https://railway.app)
-2. Click "New Project"
-3. Select "Deploy from GitHub repo"
-4. Choose your repository: `nest-api`
+2. Create a new project OR open your existing project
+3. Click "+ New" → Select "Database" → "PostgreSQL"
+4. Wait for PostgreSQL to provision (takes ~30 seconds)
+5. ✅ Railway automatically creates `DATABASE_URL` environment variable
 
-### Step 2: Add PostgreSQL Database
-1. In your Railway project, click "+ New"
-2. Select "Database" → "PostgreSQL"
-3. Railway will automatically create a `DATABASE_URL` environment variable
+### Step 2: Create/Connect Your App Service
+1. In the same Railway project, click "+ New"
+2. Select "GitHub Repo" → Choose `nest-api`
+3. Railway will start building automatically (this will fail initially - that's OK!)
 
 ### Step 3: Configure Environment Variables
-Go to your service settings and add these variables:
+**CRITICAL:** Go to your app service → Variables tab and add:
 
 ```env
 NODE_ENV=production
-JWT_SECRET=<generate-a-secure-random-string>
+JWT_SECRET=<generate-with-command-below>
 JWT_EXPIRES_IN=7d
-STRIPE_SECRET_KEY=<your-stripe-secret-key>
-STRIPE_WEBHOOK_SECRET=<your-stripe-webhook-secret>
-PORT=3000
+STRIPE_SECRET_KEY=sk_test_your_stripe_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
-**Important Notes:**
-- ✅ `DATABASE_URL` is automatically provided by Railway when you add Postgres
-- ✅ `PORT` is also automatically set by Railway, but you can override it
-- ⚠️ Generate a strong `JWT_SECRET` (use: `openssl rand -base64 32`)
+**Generate JWT_SECRET:**
+```bash
+openssl rand -base64 32
+```
 
-### Step 4: Deploy
-1. Railway will automatically deploy when you push to your main branch
-2. Monitor the build logs in Railway dashboard
-3. Once deployed, Railway will provide a public URL
+**DO NOT ADD DATABASE_URL** - It's automatically shared from PostgreSQL service!
 
-### Step 5: Set Up Stripe Webhook (If needed)
-1. Get your Railway app URL: `https://your-app-name.railway.app`
-2. Go to Stripe Dashboard → Webhooks
-3. Add endpoint: `https://your-app-name.railway.app/webhooks/stripe`
-4. Select events: `checkout.session.completed`, `payment_intent.succeeded`
-5. Copy the webhook secret and update `STRIPE_WEBHOOK_SECRET` in Railway
+### Step 4: Link Database to App
+1. In your app service settings, go to "Variables" tab
+2. You should see `DATABASE_URL` as a "Referenced Variable"
+3. If not, click "+ Reference" → Select your PostgreSQL database → `DATABASE_URL`
 
-### Verify Deployment
-Check these endpoints:
-- Health: `https://your-app.railway.app/health`
-- API Docs: `https://your-app.railway.app/api` (if Swagger is enabled)
+### Step 5: Deploy
+1. Go to "Deployments" tab
+2. Click "Redeploy" to trigger a new deployment
+3. Watch the build logs for any errors
+4. Wait for health check to pass (~2-3 minutes)
+
+### Step 6: Verify Deployment
+Once deployed, test these endpoints:
+
+```bash
+# Replace YOUR_APP_URL with your Railway URL
+curl https://YOUR_APP_URL.railway.app/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "database": {
+    "connected": true
+  }
+}
+```
 
 ### Troubleshooting
 
-#### Database Connection Issues
-If you see `ECONNREFUSED` errors:
-1. Verify `DATABASE_URL` is set in Railway environment variables
-2. Check that PostgreSQL service is running
-3. Review build logs for connection details
+#### ❌ Healthcheck Failed - Service Unavailable
+**Most common issue!** This means your app isn't starting. Check:
 
-#### Build Failures
+1. **Is PostgreSQL added?**
+   - Go to your project → You should see TWO services (your app + PostgreSQL)
+   - If PostgreSQL is missing, add it first!
+
+2. **Is DATABASE_URL set?**
+   - Go to app service → Variables tab
+   - You should see `DATABASE_URL` (usually as a reference from PostgreSQL)
+   - If missing, click "+ Reference" → Select PostgreSQL → `DATABASE_URL`
+
+3. **Check deployment logs:**
+   ```
+   Look for these in Railway logs:
+   ✅ "🔄 Starting application..."
+   ✅ "💾 DATABASE_URL: SET ✅"
+   ✅ "✅ Using DATABASE_URL for connection"
+   ✅ "🚀 Application is running on: http://0.0.0.0:3000"
+   
+   ❌ If you see "DATABASE_URL: NOT SET ❌" → PostgreSQL not linked!
+   ❌ If you see connection errors → Check DATABASE_URL is correct
+   ```
+
+4. **Verify environment variables:**
+   - `NODE_ENV=production` ✅
+   - `JWT_SECRET` is set ✅
+   - `DATABASE_URL` exists (from PostgreSQL) ✅
+
+#### ❌ Build Failures
 ```bash
 # Common issues:
 - Missing dependencies → Check package.json
