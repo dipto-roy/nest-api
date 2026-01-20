@@ -38,7 +38,7 @@ import { HealthModule } from './health/health.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
+        const databaseUrl = configService.get<string>('DATABASE_URL');
         const isProduction = configService.get('NODE_ENV') === 'production';
         
         // Railway internal networking doesn't use SSL
@@ -78,11 +78,11 @@ import { HealthModule } from './health/health.module';
           console.log('✅ Using individual DATABASE_* variables');
           return {
             ...baseConfig,
-            host: configService.get('DATABASE_HOST'),
-            port: configService.get('DATABASE_PORT'),
-            username: configService.get('DATABASE_USERNAME'),
-            password: configService.get('DATABASE_PASSWORD'),
-            database: configService.get('DATABASE_NAME'),
+            host: configService.get<string>('DATABASE_HOST'),
+            port: configService.get<number>('DATABASE_PORT'),
+            username: configService.get<string>('DATABASE_USERNAME'),
+            password: configService.get<string>('DATABASE_PASSWORD'),
+            database: configService.get<string>('DATABASE_NAME'),
           };
         }
       },
