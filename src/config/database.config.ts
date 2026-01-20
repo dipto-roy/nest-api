@@ -16,13 +16,42 @@ const configService = new ConfigService();
  * 
  * Railway/Production: SSL is enabled automatically for secure connections
  */
+
+// Railway provides these variables through private networking
+const dbHost = configService.get('DATABASE_HOST') || 
+               configService.get('PGHOST') || 
+               'localhost';
+const dbPort = parseInt(configService.get('DATABASE_PORT') || 
+                        configService.get('PGPORT') || 
+                        '5432');
+const dbUser = configService.get('DATABASE_USERNAME') || 
+               configService.get('PGUSER') || 
+               'postgres';
+const dbPassword = configService.get('DATABASE_PASSWORD') || 
+                   configService.get('PGPASSWORD') || 
+                   '';
+const dbName = configService.get('DATABASE_NAME') || 
+               configService.get('PGDATABASE') || 
+               'nest_api_db';
+
+// Debug logging in production to troubleshoot Railway
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔍 Database Configuration:');
+  console.log('  Host:', dbHost);
+  console.log('  Port:', dbPort);
+  console.log('  Database:', dbName);
+  console.log('  User:', dbUser);
+  console.log('  Password:', dbPassword ? '***' + dbPassword.slice(-4) : 'NOT SET');
+  console.log('  SSL:', process.env.NODE_ENV === 'production' ? 'ENABLED' : 'DISABLED');
+}
+
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: configService.get('DATABASE_HOST'),
-  port: configService.get('DATABASE_PORT'),
-  username: configService.get('DATABASE_USERNAME'),
-  password: configService.get('DATABASE_PASSWORD'),
-  database: configService.get('DATABASE_NAME'),
+  host: dbHost,
+  port: dbPort,
+  username: dbUser,
+  password: dbPassword,
+  database: dbName,
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: process.env.NODE_ENV === 'development', // Set to false in production
