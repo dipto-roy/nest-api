@@ -19,6 +19,7 @@ const configService = new ConfigService();
 
 // Check if DATABASE_URL is provided (Railway, Heroku, etc.)
 const databaseUrl = configService.get('DATABASE_URL');
+const isRailwayInternal = databaseUrl?.includes('railway.internal');
 
 // Debug logging in production to troubleshoot Railway
 if (process.env.NODE_ENV === 'production') {
@@ -33,11 +34,12 @@ if (process.env.NODE_ENV === 'production') {
       console.log('  Database:', url.pathname.slice(1));
       console.log('  User:', url.username);
       console.log('  Password:', url.password ? '***' + url.password.slice(-4) : 'NOT SET');
+      console.log('  Railway Internal:', isRailwayInternal ? 'YES' : 'NO');
     } catch (e) {
       console.log('  DATABASE_URL parsing error:', e.message);
     }
   }
-  console.log('  SSL:', process.env.NODE_ENV === 'production' ? 'ENABLED' : 'DISABLED');
+  console.log('  SSL:', !isRailwayInternal ? 'ENABLED' : 'DISABLED (Railway internal)');
 }
 
 // If DATABASE_URL exists (Railway), use it directly
@@ -53,27 +55,19 @@ if (databaseUrl) {
     synchronize: process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
     
-    // 🔒 SSL Configuration for Production
-    ssl: process.env.NODE_ENV === 'production' ? {
-      rejectUnauthorized: false, // Railway requires this
+    // 🔒 SSL Configuration - Railway internal network doesn't use SSL
+    ssl: process.env.NODE_ENV === 'production' && !isRailwayInternal ? {
+      rejectUnauthorized: false,
     } : false,
     
     // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
-    // Reduced for Railway free tier
     extra: {
-      max: 10, // Reduced from 30 for Railway free tier
-      min: 2,  // Reduced from 5
+      max: 10,
+      min: 2,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000, // Increased from 5000
-      statement_timeout: 30000, // Increased from 10000
+      connectionTimeoutMillis: 10000,
+      statement_timeout: 30000,
       query_timeout: 30000,
-      
-      // SSL for extra config
-      ...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      }),
     },
   };
 } else {
@@ -112,21 +106,13 @@ if (databaseUrl) {
     } : false,
     
     // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
-    // Reduced for Railway free tier
     extra: {
-      max: 10, // Reduced from 30 for Railway free tier
-      min: 2,  // Reduced from 5
+      max: 10,
+      min: 2,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000, // Increased from 5000
-      statement_timeout: 30000, // Increased from 10000
+      connectionTimeoutMillis: 10000,
+      statement_timeout: 30000,
       query_timeout: 30000,
-      
-      // SSL for extra config
-      ...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      }),
     },
   };
 }
