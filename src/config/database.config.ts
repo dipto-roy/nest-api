@@ -17,74 +17,121 @@ const configService = new ConfigService();
  * Railway/Production: SSL is enabled automatically for secure connections
  */
 
-// Railway provides these variables through private networking
-const dbHost = configService.get('DATABASE_HOST') || 
-               configService.get('PGHOST') || 
-               'localhost';
-const dbPort = parseInt(configService.get('DATABASE_PORT') || 
-                        configService.get('PGPORT') || 
-                        '5432');
-const dbUser = configService.get('DATABASE_USERNAME') || 
-               configService.get('PGUSER') || 
-               'postgres';
-const dbPassword = configService.get('DATABASE_PASSWORD') || 
-                   configService.get('PGPASSWORD') || 
-                   '';
-const dbName = configService.get('DATABASE_NAME') || 
-               configService.get('PGDATABASE') || 
-               'nest_api_db';
+// Check if DATABASE_URL is provided (Railway, Heroku, etc.)
+const databaseUrl = configService.get('DATABASE_URL');
 
 // Debug logging in production to troubleshoot Railway
 if (process.env.NODE_ENV === 'production') {
   console.log('🔍 Database Configuration:');
-  console.log('  Host:', dbHost);
-  console.log('  Port:', dbPort);
-  console.log('  Database:', dbName);
-  console.log('  User:', dbUser);
-  console.log('  Password:', dbPassword ? '***' + dbPassword.slice(-4) : 'NOT SET');
+  console.log('  Using DATABASE_URL:', databaseUrl ? 'YES' : 'NO');
+  if (databaseUrl) {
+    // Parse and log connection details (safely)
+    try {
+      const url = new URL(databaseUrl);
+      console.log('  Host:', url.hostname);
+      console.log('  Port:', url.port);
+      console.log('  Database:', url.pathname.slice(1));
+      console.log('  User:', url.username);
+      console.log('  Password:', url.password ? '***' + url.password.slice(-4) : 'NOT SET');
+    } catch (e) {
+      console.log('  DATABASE_URL parsing error:', e.message);
+    }
+  }
   console.log('  SSL:', process.env.NODE_ENV === 'production' ? 'ENABLED' : 'DISABLED');
 }
 
-export const dataSourceOptions: DataSourceOptions = {
-  type: 'postgres',
-  host: dbHost,
-  port: dbPort,
-  username: dbUser,
-  password: dbPassword,
-  database: dbName,
-  entities: ['dist/**/*.entity{.ts,.js}'],
-  migrations: ['dist/migrations/*{.ts,.js}'],
-  synchronize: process.env.NODE_ENV === 'development', // Set to false in production
-  logging: process.env.NODE_ENV === 'development',
-  
-  // 🔒 SSL Configuration for Production (Railway, Render, etc.)
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: false, // Railway requires this
-  } : false,
-  
-  // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
-  // Optimized for spike loads up to 100 concurrent users
-  extra: {
-    max: 30,                      // Handle spike load (was 15)
-    min: 5,                       // Keep warm connections (was 3)
-    idleTimeoutMillis: 30000,     // Close idle connections after 30s
-    connectionTimeoutMillis: 5000, // Timeout waiting for connection (5s)
+// If DATABASE_URL exists (Railway), use it directly
+let dataSourceOptions: DataSourceOptions;
+
+if (databaseUrl) {
+  // Railway provides DATABASE_URL
+  dataSourceOptions = {
+    type: 'postgres',
+    url: databaseUrl,
+    entities: ['dist/**/*.entity{.ts,.js}'],
+    migrations: ['dist/migrations/*{.ts,.js}'],
+    synchronize: process.env.NODE_ENV === 'development',
+    logging: process.env.NODE_ENV === 'development',
     
-    // PostgreSQL specific optimizations
-    statement_timeout: 10000,     // Kill queries taking longer than 10s
-    query_timeout: 10000,         // Same as statement_timeout
+    // 🔒 SSL Configuration for Production
+    ssl: process.env.NODE_ENV === 'production' ? {
+      rejectUnauthorized: false, // Railway requires this
+    } : false,
     
-    // SSL for extra config (Railway compatibility)
-    ...(process.env.NODE_ENV === 'production' && {
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    }),
-  },
-  
-  // Alternative way to set pool size
-  poolSize: 30,  // Increased for spike load handling
-};
+    // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
+    extra: {
+      max: 30,
+      min: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+      statement_timeout: 10000,
+      query_timeout: 10000,
+      
+      // SSL for extra config
+      ...(process.env.NODE_ENV === 'production' && {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
+    },
+    poolSize: 30,
+  };
+} else {
+  // Local development: use individual variables
+  const dbHost = configService.get('DATABASE_HOST') || 
+                 configService.get('PGHOST') || 
+                 'localhost';
+  const dbPort = parseInt(configService.get('DATABASE_PORT') || 
+                          configService.get('PGPORT') || 
+                          '5432');
+  const dbUser = configService.get('DATABASE_USERNAME') || 
+                 configService.get('PGUSER') || 
+                 'postgres';
+  const dbPassword = configService.get('DATABASE_PASSWORD') || 
+                     configService.get('PGPASSWORD') || 
+                     '';
+  const dbName = configService.get('DATABASE_NAME') || 
+                 configService.get('PGDATABASE') || 
+                 'nest_api_db';
+
+  dataSourceOptions = {
+    type: 'postgres',
+    host: dbHost,
+    port: dbPort,
+    username: dbUser,
+    password: dbPassword,
+    database: dbName,
+    entities: ['dist/**/*.entity{.ts,.js}'],
+    migrations: ['dist/migrations/*{.ts,.js}'],
+    synchronize: process.env.NODE_ENV === 'development',
+    logging: process.env.NODE_ENV === 'development',
+    
+    // 🔒 SSL Configuration for Production
+    ssl: process.env.NODE_ENV === 'production' ? {
+      rejectUnauthorized: false,
+    } : false,
+    
+    // ⚡ PERFORMANCE OPTIMIZATION - Connection Pool
+    extra: {
+      max: 30,
+      min: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+      statement_timeout: 10000,
+      query_timeout: 10000,
+      
+      // SSL for extra config
+      ...(process.env.NODE_ENV === 'production' && {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
+    },
+    poolSize: 30,
+  };
+}
+
+export { dataSourceOptions };
 
 const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;
