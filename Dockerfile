@@ -22,7 +22,8 @@ WORKDIR /app
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
+    adduser -S nestjs -u 1001 && \
+    apk add --no-cache curl
 
 # Copy built assets from builder
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
@@ -40,8 +41,8 @@ EXPOSE 3050
 USER nestjs
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3050/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3050/health || exit 1
 
 # Start the application
 CMD ["node", "dist/main"]

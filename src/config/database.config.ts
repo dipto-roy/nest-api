@@ -46,13 +46,14 @@ if (process.env.NODE_ENV === 'production') {
 let dataSourceOptions: DataSourceOptions;
 
 if (databaseUrl) {
-  // Railway provides DATABASE_URL
+  // Railway/Render provides DATABASE_URL
   dataSourceOptions = {
     type: 'postgres',
     url: databaseUrl,
     entities: ['dist/**/*.entity{.ts,.js}'],
     migrations: ['dist/migrations/*{.ts,.js}'],
-    synchronize: process.env.NODE_ENV === 'development',
+    // Allow sync via env var for initial deployment, then disable
+    synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true' || process.env.NODE_ENV === 'development',
     logging: process.env.NODE_ENV === 'development',
     
     // 🔒 SSL Configuration - Railway internal network doesn't use SSL
